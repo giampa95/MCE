@@ -1,6 +1,7 @@
 # Monte Carlo Experiment (MCE) 
 
 Monte Carlo Experiment (MCE) is a format specification for *Monte Carlo Experiments*.
+
 The current version of this specification is `0.0.1`.
 
 ## 1. Purpose and scope
