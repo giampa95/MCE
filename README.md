@@ -1,6 +1,7 @@
-# Monte Carlo Experiment (MCE) - *Version 0.0.1*
+# Monte Carlo Experiment (MCE) 
 
 Monte Carlo Experiment (MCE) is a format specification for *Monte Carlo Experiments*.
+The current version of this specification is `0.0.1`.
 
 ## 1. Purpose and scope
 
@@ -319,3 +320,4 @@ In this Section, we present some examples of **MCE files**.
 - Derived parameters are not supported. This may needed for parameters that need to be defined with offsets e.g., same temperature with Kelvin and Celsius.
 - Array elements for general modeling formats. Note that in *Modelica* arrays are addressed as scalars with its own syntax e.g., as `k[2]`.
 - Distributions beyond `uniform` and `normal` are not supported.
+
