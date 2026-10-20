@@ -170,9 +170,9 @@ A special attribute for infinite-set distribution is `<coverage>`. This attribut
 
 For a truncated distribution with cumulative function $F$ and coverage interval $[x_{min}, x_{max}]$, the value $u$ extracted in the uniform distribution with interval $[0,1]$, and it is mapped as
 
-```latex
+$$
 x = {F}^{-1}\left[ {F}(x_{min}) + u \cdot \left( {F}(x_{max}) - {F}(x_{min}) \right) \right].
-```
+$$
 
 This is also valid for distribution with closed and limited set with $[x_{min}, x_{max}]$ as interval.
 
