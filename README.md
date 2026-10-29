@@ -14,7 +14,7 @@ The format is the contract between programs.
 2) A tool is used to run the preconfigured *Monte Carlo* experiment;
 3) A tool is used to analyse the results.
 
-The format of models in scope are *Modelica*, *FMI 2.0*, *FMI 3.0* and *SSP* systems. However, this can be extended to further models format.
+The format of models were originally in scope are *Modelica*, *FMI 2.0*, *FMI 3.0* and *SSP* systems. However, this is extended to further models format.
 
 The terms defined in this document are reported below.
 
@@ -331,3 +331,4 @@ In this Section, we present some examples of **MCE files**.
 - Array elements for general modeling formats. Note that in *Modelica* arrays are addressed as scalars with its own syntax e.g., as `k[2]`.
 - Additional distributions support. In particular, support for discrete distribution must be added.
 - Better specifications for generic runners such as `python`,  `c` / `c++` and `rust`.
+- Clarify the opportunity to manage several models, with eventually different runners, in a co-simulation environment. In this case: the parameters must be passed at each model; there must be some information related to co-simulation environment e.g., each couple of models need to specify communication model.
