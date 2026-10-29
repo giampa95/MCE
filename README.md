@@ -1,6 +1,8 @@
-# Monte Carlo Experiment (MCE) - *Version 0.0.1*
+# Monte Carlo Experiment (MCE)
 
-Monte Carlo Experiment (MCE) is a format specification for *Monte Carlo Experiments*.
+Monte Carlo Experiment (MCE) is a declarative description of *Monte Carlo Experiments* including model, runner settings, parameters uncertainty and sampling design.
+
+The current version of this declarative description is `0.0.2`.
 
 ## 1. Purpose and scope
 
@@ -28,48 +30,48 @@ The structure of the **MCE file** is presented below in the tree, where `?` mean
 experiment                  name, schemaVersion
 ├─ environment              format (e.g., Modelica), version
 │  ├─ model                 name, path
-│  ├─ package*+             path (used for Modelica) 
+│  ├─ package*              path (used for Modelica) 
 │  ├─ parameterSet*         name (used for SSP)
-|  └─ *+                    ...                      
+|  └─ *                     ...                      
 ├─ simulation               
 │  ├─ runner                name
-│  └─ setting*+             name, value
-├─ design                   method, samples, seed, path?, start?
+│  └─ setting*              name, value
+├─ design                   method, samples, seed?, path?, start?
 ├─ recording?               start, interval, interpolation
 ├─ execution?               timeout, parallel (number of parallel simulations)
 ├─ syntax?                  separator (to access to internal hierarchical model) 
 ├─ parameters              
-│  ├─ stochastic*+          name
+│  ├─ stochastic*           name
 │  │  ├─ distribution       name, distribution attributes
 │  │  │  └─ coverage?       only for infinite set distributions 
 │  │  └─ target+            scope (can have multiple targets)
-│  └─ constant*+            name, value
+│  └─ constant*             name, value
 │     └─ target+            scope (can have multiple targets)
 ├─ signals
-│  └─ signal*+             name
-│     └─ target            scope (only one target)
+│  └─ signal*               name
+│     └─ target             scope (only one target)
 ```
 
 ## 3. Elements reference
 
 ### 3.1 `<experiment>`
 
-`<experiment>` is the root element. `name` labels the experiment.  `schemaVersion` is the XML schemaVersion (e.g., `1.0.0`).
+`<experiment>` is the root element. `name` labels the experiment.  `schemaVersion` is the version of the MCE specification the file conforms to.
 
 ### 3.2 `<environment>`
 
-`<environment>` describes the environment in which each simulation run.
+`<environment>` describes the environment in which each simulation runs.
 
-In the following table, we describe the basics attributes.
+In the following table, we describe the basic attributes.
 
 | Attribute | Description |
 | --- | --- |
-| `format` | Model format. Examples are `modelica`, `fmi`, `ssp`. |
+| `format` | Model format. Examples are `modelica`, `fmi`, `ssp`, `spice`. |
 | `version` | Version of the *format standard*. Examples are *Modelica* language version for a `.mo`, *FMI* version for an *FMU*, *SSP* version. |
 | `model path` | Model path. |
 | `model name` | Model name. |
 
-The following table lists the attributes that depend on the *model format*.
+The following table lists examples of attributes that depend on the *model format*.
 
 | Model format | Attribute | Description |
 | --- | --- | --- |
@@ -78,15 +80,22 @@ The following table lists the attributes that depend on the *model format*.
 
 ### 3.3 `<simulation>`
 
-`<simulation>` describes the simulation settings in which each simulation run.
+`<simulation>` describes the simulation settings in which each simulation runs.
 
-`<runner name>` selects the runner that executes the model. `<setting name value>` entries set simulation settings from runner's own vocabulary.
+`<runner name>` selects the runner that executes the model, while `<runner path>` selects the runner's path when needed. `<setting name value>` entries set simulation settings from runner's own vocabulary.
+
+Examples of model's runners are presented in the table below.
 
 | Runner name | Model format | Settings |
 | --- | --- | --- |
 | `OMPython` | `modelica` | `startTime`, `stopTime`, `stepSize`, `tolerance`, `solver`, ... |
+| `Rumoca` | `modelica` | `t_end`, `dt`, ... |
 | `FMPy` | `fmi` | `start_time`, `stop_time`, `step_size`, `relative_tolerance`, `solver`, ... |
 | `OMSimulator` | `ssp`, `fmi` | `startTime`, `stopTime`, `tolerance`, ... |
+| `LTspice` | `spice` | `tran`, `ac`, `options`, `meas`, ... |
+| `python` | any | user-defined |
+| `c` / `c++` | any | user-defined |
+| `rust` | any | user-defined |
 
 ### 3.4 `<design>`
 
@@ -100,7 +109,7 @@ The following table lists the attributes that depend on the *model format*.
 | `path` | Optional. Required when `method` = `file`. |
 | `start` | Optional. Non-negative integer indicating the first run of the sequence. |
 
-With `method` =`corners`, each stochastic parameter takes its lower and upper coverage bound. With `method` = `file`, `samples` must equal the number of data rows and the columns must match the stochastic parameter names exactly, in any order. With `method` = `sobol`, design whose sample count is not a power of two loses its balance properties. With `method` = `lhs`, designs depend on the sample count and cannot be extended by adding runs, therefore the use of `start` do not make sense.
+With `method` =`corners`, each stochastic parameter takes its lower and upper coverage bound. With `method` = `file`, `samples` must equal the number of data rows and the columns must match the stochastic parameter names exactly, in any order. With `method` = `sobol`, design whose sample count is not a power of two loses its balance properties. With `method` = `lhs`, designs depend on the sample count and cannot be extended by adding runs, therefore the use of `start` does not make sense.
 
 ### 3.5 `<recording>` - optional
 
@@ -112,7 +121,7 @@ With `method` =`corners`, each stochastic parameter takes its lower and upper co
 | `interval` | Recording interval. |
 | `interpolation` | Recording interpolation when `interval` is different from the interval of the runner. Examples are `linear` or `zoh`. |
 
-Note that these attributes are usefull when the user need to save memory space.
+Note that these attributes are useful when the user needs to save memory space.
 
 ### 3.6 `<execution>` - optional
 
@@ -121,19 +130,19 @@ Note that these attributes are usefull when the user need to save memory space.
 | Attribute | Description |
 | --- | --- |
 | `timeout` | Maximum duration of one run, in seconds. |
-| `parallel` | Optional. Positive integer indicating the number of parallel simulations. When it is not declared, the simulations are exectuted sequentially. |
+| `parallel` | Optional. Positive integer indicating the number of parallel simulations. When it is not declared, the simulations are executed sequentially. |
 
 ### 3.7 `<syntax>` - optional
 
 `<syntax>` is an optional element specifying details regarding syntax.
 
-In particular, `separator` specify a character to access to model hierarchical level for `scope` defined in `<parameters>` Section and `<signals>` Section. More details can be found at Section 4.
+In particular, `separator` specifies a character to access to model hierarchical level for `scope` defined in `<parameters>` Section and `<signals>` Section. More details can be found at Section 4.
 
 ### 3.8 `<parameters>`
 
-`<parameters>` is an element which list all parameters to be tuned.
+`<parameters>` is an element which lists all parameters to be tuned.
 
-There are two kind of parameters.
+There are two kinds of parameters.
 
 - **`<constant name value>`** is a fixed parameter overriding the model's default value/values.
 - **`<stochastic name>`** is a stochastic parameter with a `<distribution>` and its own attributes. It is a random variable being sampled at each *Monte Carlo* run. As the fixed parameters, it overrides the model's default value/values.
@@ -149,36 +158,38 @@ Every parameter has a unique `name` and one or more `<target scope="..."/>`.
 
 `<distribution>` is an element which defines a distribution with its own attributes.  
 
-The table below reports basic examples of distributions.
+The table below reports basic examples of (continuous) distributions.
 
 | `name` | Attributes |
 | --- | --- |
 | `uniform` | `min`, `max` |
 | `normal` | `mean`, `sigma`, `<coverage>` |
+| `triangular` | `min`, `mode`, `max` |
+| `beta` |  `min`, `max`, `alpha`, `beta` |
 
 Further distributions can be added as new name values with their own attributes.
 
 Note that most of the `<design method>` samples values in the parameter-set $[0,1]^d$ where $d$ is the number of stochastic parameters, and then rescale the values using selected distributions.
 
-A special attribute for infinite-set distribution is `<coverage>`. This attribute is needed to prevent samples with infinite coordinate. In fact, this attribute limits the selected distribution to a closed and limited set. For the normal distribution, it can be used in one of the following forms.
+A special attribute for infinite-set distribution is `<coverage>`. This attribute is needed to prevent samples with infinite coordinate. In fact, this attribute limits the selected distribution to a closed and limited set. For the `normal` distribution, it can be used in one of the following forms.
 
 - `<coverage probability="P"/>`, where `P` is a value in $[0, 1]$ associated to the interval cutting the tails with that probability.
-- `<coverage sigma="n"/>`, where `n` is positive value associate to the interval cutting the tails at $\pm nσ$.
+- `<coverage sigma="n"/>`, where `n` is positive value associated to the interval cutting the tails at $\pm nσ$.
 - `<coverage lower="L" upper="U"/>`, where `L` and `U` are associated to the interval cutting the tails for values outside $[L, U]$ interval.
 
 For a truncated distribution with cumulative function $F$ and coverage interval $[x_{min}, x_{max}]$, the value $u$ extracted in the uniform distribution with interval $[0,1]$, and it is mapped as
 
-```latex
+$$
 x = {F}^{-1}\left[ {F}(x_{min}) + u \cdot \left( {F}(x_{max}) - {F}(x_{min}) \right) \right].
-```
+$$
 
-This is also valid for distribution with closed and limited set with $[x_{min}, x_{max}]$ as interval.
+This is also valid for distributions with closed and bounded support, where $[x_{min}, x_{max}]$ is the support itself.
 
 ### 3.9 `<signals>`
 
-`<signals>` is an element which list all signals to be recorded.
+`<signals>` is an element which lists all signals to be recorded.
 
-Every signal has an unique `name` has exactly one `<target scope="..."/>`.
+Every signal has a unique `name` and exactly one `<target scope="..."/>`.
 
 A parameter recorded as a signal is legal but constant.
 
@@ -186,11 +197,11 @@ A parameter recorded as a signal is legal but constant.
 
 A **scope** is the full address of a variable inside the model. It is specified for each of the `<parameters>` and `<signals>`.
 
-In *Modelica* `model format,` the scope is full specified with its own syntax. The user can access to hierarchical internal models and variables using the `.` character. This can be used to access to multiple level of hierarchy. Examples are `testbench.plant.motor.mass`, `testbench.plant.k[2]`.
+In *Modelica* `model format`, the scope is fully specified with its own syntax. The user can access to hierarchical internal models and variables using the `.` character. This can be used to access to multiple level of hierarchy. Examples are `testbench.plant.motor.mass`, `testbench.plant.k[2]`.
 
 In other model format, the access to hierarchical is not guaranteed by own syntax. For this reason, we need to define a character to access to a deeper hierarchical level. This is done with `syntax separator`, presented in Section 3.7.
 
-As side note, the `.` character is not the right choice for every `model format`. For example, *SSP* `model format` may contain variable names with dots. For this reason, the user need to choose an alternative `separator` like `:`. Using the latter, a variable `myVariable`can be accessed as `myComponent:myVariable`.
+As side note, the `.` character is not the right choice for every `model format`. For example, *SSP* `model format` may contain variable names with dots. For this reason, the user needs to choose an alternative `separator` like `:`. Using the latter, a variable `myVariable` can be accessed as `myComponent:myVariable`.
 
 ## 5. Examples
 
@@ -199,7 +210,7 @@ In this Section, we present some examples of **MCE files**.
 ### 5.1 Minimal example with *FMI 2.0* format and *FMPy runner*
 
  ```xml
-<experiment schemaVersion="1.0.0" name="VanDerPol">
+<experiment schemaVersion="0.0.2" name="VanDerPol">
   <environment format="fmi" version="2.0">
     <model path="models/VanDerPol.fmu"/>
   </environment>
@@ -226,7 +237,7 @@ In this Section, we present some examples of **MCE files**.
 ### 5.2 Example with *Modelica* format and *OMPython* runner
 
 ```xml
-<experiment schemaVersion="1.0.0" name="SpringMass">
+<experiment schemaVersion="0.0.2" name="SpringMass">
   <environment format="modelica">
     <model path="./models/SpringMass.mo" name="SpringMass"/>
     <package path="./packages/mechanics/package.mo"/>
@@ -273,7 +284,7 @@ In this Section, we present some examples of **MCE files**.
 ### 5.3 Example with *SSP* format and *OMSimulator* runner
 
 ```xml
-<experiment schemaVersion="1.0.0" name="engine">
+<experiment schemaVersion="0.0.2" name="engine">
   <environment format="ssp" version="2.0">
     <model path="models/engine.ssp"/>
     <parameterSet name="nominalParameters.ssv"/>
@@ -282,7 +293,7 @@ In this Section, we present some examples of **MCE files**.
     <runner name="OMSimulator"/>
     <setting name="startTime" value="0"/>
     <setting name="stopTime" value="10"/>
-    <setting name="fixedStepSize" value="0.001"/>
+    <setting name="stepSize" value="0.001"/>
   </simulation>
   <design method="file" samples="8" path="designs/unit8.csv"/>
   <recording interval="0.02"/>
@@ -316,6 +327,7 @@ In this Section, we present some examples of **MCE files**.
 ## 6. Limitations and further development
 
 - Correlated parameters are not supported.
-- Derived parameters are not supported. This may needed for parameters that need to be defined with offsets e.g., same temperature with Kelvin and Celsius.
+- Derived parameters are not supported. In particular, this feature is needed for parameters that need to be defined with offsets e.g., same temperature with Kelvin and Celsius.
 - Array elements for general modeling formats. Note that in *Modelica* arrays are addressed as scalars with its own syntax e.g., as `k[2]`.
-- Distributions beyond `uniform` and `normal` are not supported.
+- Additional distributions support. In particular, support for discrete distribution must be added.
+- Better specifications for generic runners such as `python`,  `c` / `c++` and `rust`.
